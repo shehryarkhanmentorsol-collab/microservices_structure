@@ -49,6 +49,8 @@ export class OrderService {
 
             // publish event to RabbitMQ
             
+            //i resolve these errors when create order, and then publish to rabbitmq.
+
             await this.rabbitMQService.publish(QUEUE.INVENTORY,{
                 events: EVENTS.ORDER_CREATED,
                 data: {
