@@ -4,13 +4,13 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 export default new DataSource({
-  type: 'mysql',
+  type: 'postgres',
   host: process.env.DB_HOST || 'localhost',
-  port: parseInt(process.env.DB_PORT || '3306', 10),
-  username: process.env.DB_USERNAME || 'root',
-  password: process.env.DB_PASSWORD || '',
+  port: parseInt(process.env.DB_PORT || '5432', 10),
+  username: process.env.DB_USERNAME || 'postgres',
+  password: process.env.DB_PASSWORD || 'postgres',
   database: process.env.DB_NAME || 'orders_db',
-  entities: [join(__dirname, '/**/*.entity{.ts,.js}')],
-  migrations: [join(__dirname, '/db/migrations/*.ts')],
+  entities: [join(__dirname, 'src/**/*.entity{.ts,.js}')],
+  migrations: [join(__dirname, 'src/db/migrations/*.ts')],
   synchronize: false,
 });

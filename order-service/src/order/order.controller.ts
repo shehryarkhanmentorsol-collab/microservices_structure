@@ -6,14 +6,11 @@ import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { CreateOrderRequestDto } from './dto/request/create-order-request.dto';
 import { CreateOrderModel } from './models/create-order.model';
 
-
-
 @UseGuards(JwtAuthGuard)
 @Controller('orders')
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
-  
   @Get()
   async findAll(): Promise<OrderResponseDto[]> {
     const orders = await this.orderService.findAll();
@@ -22,9 +19,9 @@ export class OrderController {
 
   @Get('my')
   async findMyOrders(
-    @CurrentUser() currentUser: { id: string },
+    @CurrentUser() currentUser: { userId: string },
   ): Promise<OrderResponseDto[]> {
-    const orders = await this.orderService.findMyOrders(currentUser.id);
+    const orders = await this.orderService.findMyOrders(currentUser.userId);
     return orders.map(OrderResponseDto.fromModel);
   }
 
@@ -34,19 +31,20 @@ export class OrderController {
     return OrderResponseDto.fromModel(order);
   }
 
-  // POST /orders
   @Post()
-  async create(
-    @Body() dto: CreateOrderRequestDto,
-    @CurrentUser() currentUser: { id: string },
-  ): Promise<OrderResponseDto> {
-   
-    const model = new CreateOrderModel();
-    model.title = dto.title;
-    model.description = dto.description ?? '';
-    model.userId = currentUser.id;
+async create(
+  @Body() dto: CreateOrderRequestDto,
+  @CurrentUser() currentUser: any,
+): Promise<OrderResponseDto> {
+  console.log('CurrentUser:', currentUser); // Debug log
+  
+  const model = new CreateOrderModel();
+  model.title = dto.title;
+  model.description = dto.description ?? '';
+  model.userId = currentUser?.userId;
 
-    const order = await this.orderService.create(model);
-    return OrderResponseDto.fromModel(order);
-  }
+  const order = await this.orderService.create(model);
+  return OrderResponseDto.fromModel(order);
 }
+}
+

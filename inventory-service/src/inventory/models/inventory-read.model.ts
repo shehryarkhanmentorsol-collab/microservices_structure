@@ -1,14 +1,25 @@
-import { InventoryEntity } from "../../common/database/inventory/entities/inventory.entity";
+import { InventoryDocument } from "../../common/database/inventory/schema/inventory.schema";
+
+// ── KEY DIFFERENCE FROM MySQL/PostgreSQL VERSION ─────────────────
+//
+// MySQL/PostgreSQL:   UserReadModel.fromEntity(entity: UserEntity)
+// MongoDB:            InventoryReadModel.fromDocument(doc: InventoryDocument)
+//
+// MongoDB _id is an ObjectId — we convert it to string with toString()
+// MySQL/PostgreSQL id is already a string (uuid)
+//
+// Everything above this layer (service, controller, dto) stays identical.
+
 
 export class InventoryReadModel {
-  static fromEntity(entity: InventoryEntity): InventoryReadModel {
+  static fromDocument(doc: InventoryDocument): InventoryReadModel {
     const model = new InventoryReadModel();
-    model.id = entity.id;
-    model.name = entity.name;
-    model.description = entity.description;
-    model.stock = entity.stock;
-    model.price = entity.price;
-    model.createdAt = entity.createdAt;
+    model.id = doc._id.toString();   // ObjectId → string
+    model.name = doc.name;
+    model.description = doc.description;
+    model.stock = doc.stock;
+    model.price = doc.price;
+    model.createdAt = (doc as any).createdAt;
     return model;
   }
 

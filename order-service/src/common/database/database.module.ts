@@ -13,14 +13,14 @@ import { OrderEntity } from './orders/entities/orders.entity';
       provide: DATABASE_CONNECTION,
       useFactory: async (configService: ConfigService) => {
         const dataSource = new DataSource({
-          type: 'mysql',
+          type: 'postgres',
           host: configService.get('DB_HOST') || 'localhost',
-          port: parseInt(configService.get('DB_PORT') || '3306', 10),
-          username: configService.get('DB_USERNAME') || 'root',
-          password: configService.get('DB_PASSWORD') ?? '',
+          port: parseInt(configService.get('DB_PORT') || '5432', 10),
+          username: configService.get('DB_USERNAME') || 'postgres',
+          password: String(configService.get('DB_PASSWORD') || ''),
           database: configService.get('DB_NAME') || 'orders_db',
           entities: [OrderEntity],
-          synchronize: true,
+          synchronize: configService.get('DB_SYNCHRONIZE') === 'true',
         });
         return dataSource.initialize();
       },

@@ -9,13 +9,22 @@ import { OrderController } from './order.controller';
 import { ClientsModule } from '@nestjs/microservices/module/clients.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Transport } from '@nestjs/microservices';
+import { JwtModule } from '@nestjs/jwt';
+
 
 @Module({
   imports: [
     DatabaseModule,
-    PassportModule,
-    // Register the RabbitMQ client — this creates the ClientProxy
-    // injected into RabbitMQPublisher as INVENTORY_SERVICE token
+    // defaultStrategy tells PassportModule which strategy to use with @UseGuards(JwtAuthGuard)
+    PassportModule.register({ defaultStrategy: 'jwt' }),
+    // JwtModule needed so JwtStrategy can be initialized with the secret
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        secret: configService.get<string>('JWT_SECRET') || 'secret',
+      }),
+      inject: [ConfigService],
+    }),
     ClientsModule.registerAsync([
       {
         name: INVENTORY_SERVICE,
@@ -37,3 +46,7 @@ import { Transport } from '@nestjs/microservices';
 })
 export class OrderModule {}
  
+
+
+
+

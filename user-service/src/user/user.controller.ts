@@ -3,6 +3,7 @@ import { CurrentUser } from "../common/decorators/current-user.decorator";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { UserProfileResponseDto } from "./dto/response/user-profile-response.dto";
 import { UserService } from "./user.service";
+import { Public } from "../common/decorators/Internal-public.decorator";
 
 @UseGuards(JwtAuthGuard)
 @Controller('users')
@@ -16,6 +17,7 @@ export class UserController {
         return UserProfileResponseDto.fromModel(user);
     }
 
+    @Public()
     @Get(':id')
     async findById(@Param('id') id: string): Promise<UserProfileResponseDto>{
         const user = await this.userSercive.findById(id);

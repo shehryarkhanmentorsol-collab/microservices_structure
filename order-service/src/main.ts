@@ -8,6 +8,6 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
   const port = process.env.PORT || 3002;
   await app.listen(port);
-  console.log(`📦 Order Service running on http://localhost:${port}/api`);
+  console.log(`📦 Order Service (PostgreSQL) running on http://localhost:${port}/api`);
 }
 bootstrap();

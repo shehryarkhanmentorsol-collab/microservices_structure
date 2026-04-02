@@ -1,5 +1,12 @@
+import { IsString, IsUUID } from 'class-validator';
+
 export class CreateOrderModel {
-  title: string;
-  description: string;
+  @IsUUID()
   userId: string;
+
+  @IsString()
+  title: string;
+
+  @IsString()
+  description: string;
 }

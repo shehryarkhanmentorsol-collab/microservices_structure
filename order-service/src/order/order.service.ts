@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -11,6 +12,7 @@ import { CreateOrderModel } from './models/create-order.model';
 import { RabbitMQPublisher } from '../events/rabbitmq.publisher';
 import { EVENTS, QUEUES } from '../events/events.constants';
 import { isAxiosError } from 'axios';
+import { log } from 'console';
 
 
 // @Injectable()
@@ -125,38 +127,50 @@ export class OrderService {
  
   // Service receives Model — not DTO
   async create(model: CreateOrderModel): Promise<OrderReadModel> {
-    try {
-      // Step 1: Verify user exists via HTTP call to user-service
-      await this.verifyUserExists(model.userId);
- 
-      // Step 2: Save the order
-      const order = await this.orderRepository.create(model);
- 
-      // Step 3: Publish event to RabbitMQ → inventory-service consumes it
-      await this.rabbitMQPublisher.publishOrderCreated({
-        orderId: order.id,
-        userId: order.userId,
-        title: order.title,
-      });
- 
-      return order;
-    } catch (error) {
-      if (error instanceof NotFoundException) throw error;
-      throw new InternalServerErrorException('Failed to create order');
-    }
-  }
- 
-  // HTTP call to user-service — synchronous communication
-  private async verifyUserExists(userId: string): Promise<void> {
-    try {
-      await axios.get(`${this.userServiceUrl}/users/${userId}`);
-    } catch (error) {
-      // isAxiosError narrows the type so TypeScript knows error.response exists
-      if (isAxiosError(error) && error.response?.status === 404) {
-        throw new NotFoundException(`User ${userId} not found`);
-      }
-      throw new InternalServerErrorException('User service unavailable');
-    }
+  try {
+    if (!model.userId) throw new BadRequestException('userId is required');
+
+    // Step 1: Verify user exists via HTTP call to user-service
+    await this.verifyUserExists(model.userId);
+    console.log('User verified, creating order...', model.userId);
+
+    // Step 2: Save the order
+    const order = await this.orderRepository.create(model);
+
+    // Step 3: Publish event to RabbitMQ → inventory-service consumes it
+    await this.rabbitMQPublisher.publishOrderCreated({
+      orderId: order.id,
+      userId: order.userId,
+      title: order.title,
+    });
+
+    return order;
+  } catch (error) {
+    console.log('Error creating order:', error);
+    if (error instanceof BadRequestException) throw error;
+    if (error instanceof NotFoundException) throw error;
+    throw new InternalServerErrorException('Failed to create order');
   }
 }
  
+  // HTTP call to user-service — synchronous communication
+ private async verifyUserExists(userId: string): Promise<void> {
+  try {
+    const userServiceUrl = this.configService.get<string>('USER_SERVICE_URL') || 'http://localhost:3001/api';
+    console.log(`Calling: ${userServiceUrl}/users/${userId}`); // Debug log
+    
+    await axios.get(`${userServiceUrl}/users/${userId}`);
+  } catch (error) {
+  if (isAxiosError(error)) {
+    console.log('Axios status:', error.response?.status);
+    console.log('Axios data:', error.response?.data);
+  }
+
+  if (isAxiosError(error) && error.response?.status === 404) {
+    throw new NotFoundException(`User ${userId} not found`);
+  }
+
+  throw new InternalServerErrorException('User service unavailable');
+}
+}
+} 

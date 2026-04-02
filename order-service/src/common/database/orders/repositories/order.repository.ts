@@ -46,6 +46,7 @@ export class OrderRepository extends BaseRepository {
       const saved = await repo.save(entity);
       return OrderReadModel.fromEntity(saved);
     } catch (error) {
+      console.log('Error in OrderRepository.create:', error);
       throw new InternalServerErrorException('Failed to create order');
     }
   } 
