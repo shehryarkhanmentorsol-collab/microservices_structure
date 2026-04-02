@@ -1,7 +1,7 @@
 import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
-import { UserRole } from '../../../user/enums/user.enum';
+import { UserRole } from '../../enums/user.enum';
 
-export class RegisterRequestDto {
+export class CreateUserRequestDto {
   @IsNotEmpty()
   @IsString()
   name: string;

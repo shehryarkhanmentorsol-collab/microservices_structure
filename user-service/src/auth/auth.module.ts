@@ -5,12 +5,13 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
-import { DatabaseUserModule } from '../common/database/user/database-user.module';
+import { DatabaseModule } from '../common/database/database.module';
+import { UserRepository } from '../common/database/user/repositories/user.repository';
 
 @Module({
   imports: [
-    DatabaseUserModule,
     PassportModule,
+    DatabaseModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => {
